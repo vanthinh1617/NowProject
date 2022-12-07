@@ -38,3 +38,11 @@ class Register(Resource):
     def post(self):
         data = request.get_json()
         return _success(inspect.stack(), UserService.register(data))
+
+@api.route('/getUserById/<id>')
+@api.doc(params={'id': 'user id'})
+class UserById(Resource):
+    @api.doc('')
+    @api.marshal_with(_user)
+    def get(self, id):
+        return _success(inspect.stack(), user_service.get_user_by_id(id))
