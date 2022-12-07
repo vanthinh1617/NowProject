@@ -1,38 +1,40 @@
 from flask_restx import Resource
 from flask import request
 from ..dto.user_dto  import UserDto
-from app.model.model import User
+from app.util.helpers import  _success
+from app.service.user_service import UserService
+from app.util.helpers import _throw
+import inspect
+
 api = UserDto.api
 _resp = UserDto.user_fields
+_user = UserDto.user
+_user_login = UserDto.user_login_form
 
-@api.route('/getUsers')
+@api.route('/getLists')
 class UserList(Resource):
+    @api.doc(params={'page': '1', 'pageSize' :'50'})
+    # @jwt_required()
     def get(self):
-        return   request.args
+        try:
+            payload = request.args
+            page =  payload.get('page') if payload.get('page')  else 1 
+            pageSize = payload.get('pageSize') if payload.get('page')  else 50
 
-    @api.marshal_with(_resp, code=201)
-    # @api.expect(_resp)
-    def post(self):
-        return  User(**api.payload).to_json()
-        # return {"data": api.payload, "code": 200}
-       
-        
-@api.route('/')
-class HomePage(Resource):
-    def get(self):
-        return {'hello': 'world'}
-
+            return _success(inspect.stack(),UserService.getLists(page , pageSize ))
+        except Exception  as e:
+            _throw(e)
 
 @api.route('/login')
 class Login(Resource):
-
-    @api.expect(UserDto.user_login_form)
+    @api.expect(_user_login, validate=True)
     def post(self):
-        username = request.json.get("username", None)
-        password = request.json.get("password", None)
-        # if username != "test" or password != "test":
-        #     return jsonify({"msg": "Bad username or password"}), 401
-        
+        data = request.get_json()
+        return _success(inspect.stack(), UserService.authenticate(data['username'],data['password']))
 
-        access_token = create_access_token(identity=username)
-        return jsonify(access_token=access_token)
+@api.route('/register')
+class Register(Resource):
+    @api.expect(_resp)
+    def post(self):
+        data = request.get_json()
+        return _success(inspect.stack(), UserService.register(data))

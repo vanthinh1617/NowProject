@@ -4,23 +4,32 @@ from flask_restx import Namespace, fields
 class UserDto:
     api = Namespace('user', description='')
 
-    user_fields = api.model('UserModel', {
-        '_id': fields.String(),
-        'name': fields.String(),
-        'email': fields.String(),
-        'photoUrl': fields.String(),
-        'gUserId': fields.String(),
-        'jobTitle': fields.String(),
-        'provider': fields.Integer(),
-        'emoji': fields.List(fields.String()),
-        'contractId': fields.Integer(),
-        'isAdmin': fields.Boolean
+    address=  api.model('Address',{
+        'street': fields.String(required=True),
+        'city': fields.String(required=True),
+        'zipcode': fields.String(required=True),
+
     })
 
-    user_login_form: api.model('user_login_form', {
-        "username": fields.String(),
-        "password": fields.String()
+    user_name =  api.model('UserName', {
+        'firstName': fields.String(required=True),
+        'lastName': fields.String(required=True),
     })
+
+    user_login_form = api.model('UserLoginForm',{
+        'username': fields.String(required=True),
+        'password': fields.String(required=True,)
+    })
+
+    user_fields = api.model('UserModel', {
+        '_id': fields.String(),
+        'username': fields.String(),
+        'email': fields.String(),
+        'photoUrl': fields.String(),
+        'name': fields.Nested(user_name),
+        'address': fields.Nested(address)
+    })
+
     # user_custom_token = api.model('user_custom_token', {
     #     'name': fields.String(),
     #     'email': fields.String(),
@@ -37,11 +46,11 @@ class UserDto:
     #     'duration': fields.Integer(),
     # })
 
-    # user = api.model('User', {
-    #     'data': fields.Nested(user_fields),
-    #     'statusCode': fields.Integer(required=True, description='response status code'),
-    #     'message': fields.String(required=True, description='response code')
-    # })
+    user = api.model('User', {
+        'data': fields.Nested(user_fields),
+        'statusCode': fields.Integer(required=True, description='response status code'),
+        'message': fields.String(required=True, description='response code')
+    })
 
     # user_list = api.model('user_list', {
     #     'data': fields.List(fields.Nested(user_fields)),

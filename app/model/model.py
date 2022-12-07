@@ -3,7 +3,7 @@
 """
 from pydantic import BaseModel, Field
 from app.util.objectid import PydanticObjectId
-from typing import Optional,Text, List
+from typing import Optional,Text, List, Union
 from bson.objectid import ObjectId
 from datetime import datetime
 from fastapi.encoders import jsonable_encoder
@@ -27,23 +27,21 @@ class GenericModel(BaseModel):
 
 
 class Users(GenericModel):
-    class Address: 
+    class Address(GenericModel): 
         street: str
         city: str
         zipcode: str
-    class Name:
+
+    class Name(GenericModel):
         firstName: str
         lastName: str
-    
+
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     username: str
     password: str
     email: Optional[str]
-    name: Optional[Name] #{firstname, lastname}
-    city: Optional[Address] 
-
-
-
+    name: Union[Name, None]  
+    address: Optional[Address] 
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
 class FoodCategories(GenericModel):
@@ -114,7 +112,7 @@ class FoodTypeAndStyles(GenericModel):
     prices: Optional[str]
     styles: Optional[str]
     goodFor: Optional[str]
-    standFoods: Optional[text]
+    standFoods: Optional[Text]
     capacity: PydanticObjectId
     lastAdminssionTime: Optional[Text]
     preparationTime: Optional[Text]
