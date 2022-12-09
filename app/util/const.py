@@ -76,3 +76,6 @@ class Const:
         GOOGLE_MEET = '1'
         MS_TEAMS = '2'
         ZOOM = '3'
+
+    class JWT_CONFIG:
+        SECRET_KEY = "now-project-key"

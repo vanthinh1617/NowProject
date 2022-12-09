@@ -1,11 +1,13 @@
 from flask import Flask, Blueprint
 from flask_restx import Api
-
+from app.util.const import Const
 from app.model.db import initialize_db
 from .controller.UserController import api as user_namespace
+from .controller.FoodPlaceController import api as food_place_namespace
 from app.util.exception import DuplicateDataException
 from app.util.helpers import _throw
-import datetime
+from app.util.jwt import get_exprive_time
+
 blueprint = Blueprint('api',__name__, url_prefix="/api")
 
 @blueprint.app_errorhandler(DuplicateDataException)
@@ -13,16 +15,18 @@ def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
-    _throw(error)
 
-api = Api(blueprint)
+#https://aaronluna.dev/series/flask-api-tutorial/part-3/
+authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
+
+api = Api(blueprint,   authorizations=authorizations)
 api.add_namespace(user_namespace,path='/user')
-
+api.add_namespace(food_place_namespace, path="/food_place")
 
 def create_app(name):
     app = Flask(name)
     app.config["MONGO_URI"] = "mongodb://localhost:27017/"
-    app.config["JWT_SECRET_KEY"] = "now-project-key"  # Change this "super secret" with something else!
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(minutes=1)
+    app.config["JWT_SECRET_KEY"] = Const.JWT_CONFIG.SECRET_KEY    # Change this "super secret" with something else!
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = get_exprive_time()
     initialize_db(app)
     return app

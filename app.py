@@ -6,15 +6,23 @@
 from flask_jwt_extended import JWTManager
 from app import create_app, blueprint
 from app.util.helpers import _throw
+from app.service.user_service import UserService
 
+import app.util.jwt
 app = create_app(__name__)
 app.register_blueprint(blueprint)
 
 jwt = JWTManager(app)
 
-@jwt.unauthorized_loader
-def unauthorized_loader_callback(s):
-   _throw(s)
+# Register a callback function that loads a user from your database whenever
+# a protected route is accessed. This should return any python object on a
+# successful lookup, or None if the lookup failed for any reason (for example
+# if the user has been deleted from the database).
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    user = UserService.get_by_user_name(identity.get('username'))
+    return user
 
 
 if __name__ == '__main__':  

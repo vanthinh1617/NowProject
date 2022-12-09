@@ -2,6 +2,7 @@ from app.model.db import userCollection
 from app.model.model import Users
 from ..util.helpers import _throw
 from app.util.jwt import create_token
+from bson.objectid import ObjectId
 import bcrypt
 class UserService:
     def __init__(self) -> None:
@@ -51,3 +52,13 @@ class UserService:
         pageSize = int(pageSize)
         userList =  userCollection.find().skip((page - 1) * pageSize).limit(pageSize)
         return   list(userList)
+
+    @staticmethod
+    def getUserByID(id):
+        return userCollection.find_one({"_id": ObjectId(id)})
+
+    @staticmethod
+    def get_by_user_name(user_name):
+        user=  userCollection.find_one({"username": user_name})
+        user = Users(**user)
+        return user
