@@ -3,6 +3,7 @@ from app.model.model import FoodPlaces, Users
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
+from app.util.exception import NotPermissionException, NotFoundDataException
 class FoodPlaceService:
     @staticmethod
     def getList(page= 1, pageSize = 30):
@@ -13,7 +14,8 @@ class FoodPlaceService:
 
     @staticmethod
     def getByID(id):
-        return foodPlacesCollection.find_one({"_id": ObjectId(id)})
+        food =  foodPlacesCollection.find_one({"_id": ObjectId(id)})
+        return food
 
     @staticmethod
     def create(payload):
@@ -37,19 +39,20 @@ class FoodPlaceService:
     @staticmethod
     def update(id,payload):
         try:
-            food = FoodPlaceService.isValid(FoodPlaceService.getByID(id) )
-            
-            food = {**food.to_bson(), **payload}
-            print(food)
-            return foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food})
+            food = FoodPlaceService.getByID(id)  
+            food = FoodPlaces( **{**food,**payload})
+            FoodPlaceService.assertFoodPlace(food)
+            foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
+            return food.to_json()
         except Exception as e:
             _throw(e)
 
     @staticmethod
-    def isValid(food):
+    def assertFoodPlace(food:FoodPlaces):
         user: Users = get_current_user()
-        food = FoodPlaces(**food) 
-        assert food , "can't find item"
-        assert food.userID == user.id, "Unauthorized"
+        if not food : _throw(NotFoundDataException("can't find food place"))
+        if user is not None:
+            if food.userID != user.id: _throw(NotPermissionException("Not permission"))
+
+
         
-        return food

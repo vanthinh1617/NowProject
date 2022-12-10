@@ -14,8 +14,11 @@ _foodFields= FoodPlaceDto.food_place_fields
 @api.route('/get_by_id/<id>')
 class FoodPlace(Resource):
     def get(self, id):
-        foodPlace = FoodPlaceService.getByID(id)
-        return  _success(inspect.stack(), foodPlace)
+        try:
+            foodPlace = FoodPlaceService.getByID(id)
+            return  _success(inspect.stack(), foodPlace)
+        except Exception as e:
+            _throw(e)
 
 @api.route('/update/<id>')
 class FoodPlaceUpdate(Resource):
