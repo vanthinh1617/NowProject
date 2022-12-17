@@ -27,3 +27,20 @@ class FoodPlaceDto:
         'message': fields.String(required=True, description='response code')
     })
 
+    food_place_create = api.model('FoodPlaceCreate',{
+        "userID": fields.String(),
+        "name": fields.String(),
+        "nameWithoutAccent": fields.String(),
+        "amenities": fields.String(),
+        "phone": fields.String(),
+        "email": fields.String(),
+        "website": fields.String(),
+        "maxPrice": fields.Integer(),
+        "minPrice": fields.Integer(),
+        "allowView": fields.Integer(),
+        "status": fields.Integer(),
+        "avgRating": fields.Integer(),
+        "totalReview": fields.Integer(),
+        "categories": fields.List(fields.String),
+    })
+

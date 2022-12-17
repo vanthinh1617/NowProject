@@ -1,9 +1,10 @@
-from app.model.db import foodPlacesCollection
-from app.model.model import FoodPlaces, Users
+from app.model.db import foodPlacesCollection, foodCategoryLangsCollection, foodCategoriesCollection
+from app.model.model import FoodPlaces, Users, FoodCategories, FoodCategoriesLangs
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
+from flask import request
 class FoodPlaceService:
     @staticmethod
     def getList(page= 1, pageSize = 30):
@@ -14,16 +15,38 @@ class FoodPlaceService:
 
     @staticmethod
     def getByID(id):
-        food =  foodPlacesCollection.find_one({"_id": ObjectId(id)})
-        return food
+        result = foodPlacesCollection.aggregate([
+            {"$match": {"_id": ObjectId(id)}},
+            {"$lookup" : {
+                "from": "foodImages",
+                "let": {"placeID": "$_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$eq": ["$foodPlaceID", "$$placeID"] 
+                            }
+                        }
+                    },
+                    {"$project": { "_id": 0, "value": {"$arrayElemAt": ["$images", 0] }}},
+                ],
+                "as": "images"
+            }}
+        ])
+
+        return list(result)
 
     @staticmethod
     def create(payload):
         try:
+            lang = request.cookies.get('lang')
             user: Users = get_current_user()
             food = FoodPlaces(**payload)
-            food.userID = user.id
-            foodPlacesCollection.insert_one(food.to_bson())
+            id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
+            if payload['categories'] and id is None:
+                for category in payload['categories']: 
+                    FoodCategoryService.save(category, lang, id)
+
             return {"message": "create success", "code": 200}
         except Exception as e:
             _throw(e)
@@ -55,4 +78,32 @@ class FoodPlaceService:
             if food.userID != user.id: _throw(NotPermissionException("Not permission"))
 
 
+
+class FoodCategoryService:
+
+    # def getList(lang: str = 'vn'):
+
+    #     return foodCategoryLangsCollection.aggregate()
+    @staticmethod
+    def save(lang: str ="vn", name: str = "", foodPLaceID: int = 0):
+        if name is None or foodPLaceID == 0:
+            _throw('parameter isvalid')
+
+        foodPlace =  foodPlacesCollection.find_one({"_id": ObjectId(foodPLaceID)})
+
+        FoodPlaceService.assertFoodPlace(foodPLaceID)
         
+        foodCategory = foodCategoriesCollection.insert_one({
+            "foodPlaceID": foodPLaceID
+        })
+        
+        foodCateLangID =  foodCategoryLangsCollection.insert_one({
+            "categoryName": name,
+            "lang": lang,
+            "foodCategoryID": foodCategory.inserted_id
+        }).inserted_id
+
+        if foodCateLangID is None: _throw("can't create category")
+        return True
+
+    

@@ -11,6 +11,7 @@ foodPlacesCollection = db.foodPlaces
 foodVideosCollection = db.foodVideos
 foodLocationsCollection = db.foodLocations
 foodCategoriesCollection = db.foodCategories
+foodCategoryLangsCollection = db.foodCategoryLangs
 foodOpenTimesCollection = db.foodOpenTimes
 foodImagesCollection = db.foodImages
 foodSocialNetworkCollection = db.foodSocialNetworks

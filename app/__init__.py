@@ -4,6 +4,7 @@ from app.util.const import Const
 from app.model.db import initialize_db
 from .controller.UserController import api as user_namespace
 from .controller.FoodPlaceController import api as food_place_namespace
+from .controller.DeliveryController import api as delivery_namespace
 from app.util.exception import DuplicateDataException
 from app.util.helpers import _throw
 from app.util.jwt import get_exprive_time
@@ -22,11 +23,11 @@ authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authoriz
 api = Api(blueprint,   authorizations=authorizations)
 api.add_namespace(user_namespace,path='/user')
 api.add_namespace(food_place_namespace, path="/food_place")
-
+api.add_namespace(delivery_namespace, path="/Delivery")
 def create_app(name):
-    app = Flask(name)
+    app = Flask(name, static_folder="static")
     app.config["MONGO_URI"] = "mongodb://localhost:27017/"
     app.config["JWT_SECRET_KEY"] = Const.JWT_CONFIG.SECRET_KEY    # Change this "super secret" with something else!
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = get_exprive_time()
+    # app.config["JWT_ACCESS_TOKEN_EXPIRES"] = get_exprive_time()
     initialize_db(app)
     return app
