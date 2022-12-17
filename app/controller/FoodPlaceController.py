@@ -8,9 +8,7 @@ from flask import request
 import inspect
 from flask_jwt_extended import jwt_required
 api = FoodPlaceDto.api
-_foodPlace = FoodPlaceDto.food_place
 _foodFields= FoodPlaceDto.food_place_fields
-
 @api.route('/get_by_id/<id>')
 class FoodPlace(Resource):
     def get(self, id):

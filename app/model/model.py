@@ -1,9 +1,9 @@
 """ TUTORIAL OR EXAMPLE DOCUMENT 
     PYDANTIC tutorial: https://www.youtube.com/watch?v=Vj-iU-8_xLs    (validator example, )
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Json
 from app.util.objectid import PydanticObjectId
-from typing import Optional,Text, List, Union
+from typing import Optional,Text, List, Union, Literal, Any
 from bson.objectid import ObjectId
 from datetime import datetime
 from fastapi.encoders import jsonable_encoder
@@ -69,6 +69,13 @@ class FoodPlaces(GenericModel):
     totalReview: int=0
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
+class FoodCategoriesLangs(GenericModel):
+    id: Optional[PydanticObjectId]= Field(None, alias="_id")
+    foodCategoryID: PydanticObjectId = Field(...)
+    categoryName: str = Field(...)
+    lang: Literal['vn','us'] = Field( default='vn')
+    createTime: datetime = Field(default_factory=datetime.utcnow)
+
 class FoodVideos(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     foodPlaceID:  PydanticObjectId = Field(alias='foodPlaceID')
@@ -93,7 +100,7 @@ class FoodOpenTimes(GenericModel):
     openTime: Optional[Text]
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
-class FoodImages(GenericModel):
+class FoodSocialNetworks(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     foodPlaceID: PydanticObjectId 
     facebook :Optional[str]
@@ -145,4 +152,21 @@ class FoodReviewReport(GenericModel):
     foodReviewID: PydanticObjectId
     userID: PydanticObjectId
     content: Text
+    
+class FoodLocations(GenericModel):
+    id: Optional[PydanticObjectId] = Field(None, alias="_id")
+    food_place_id: Optional[PydanticObjectId] 
+    address: Optional[str]
+    country: Optional[str]
+    city: Optional[str]
+    postcode: Optional[str]
+    location: Optional[str]
+    createTime: datetime = Field(default_factory=datetime.utcnow)
+
+class FoodImages(GenericModel):
+    id: Optional[PydanticObjectId] = Field(None, alias="_id")
+    foodPlaceID: Optional[PydanticObjectId] 
+    avatar: Optional[str]
+    images: Optional[Json[Any]]
+    createTime: datetime = Field(default_factory=datetime.utcnow)
     
