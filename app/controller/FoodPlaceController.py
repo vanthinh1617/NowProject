@@ -7,10 +7,13 @@ from ..util.helpers import _success, _throw
 from flask import request
 import inspect
 from flask_jwt_extended import jwt_required
+from app.util.middleware import cookie_required
 api = FoodPlaceDto.api
 _foodFields= FoodPlaceDto.food_place_fields
 @api.route('/get_by_id/<id>')
 class FoodPlace(Resource):
+    @api.param('lang', _in="cookie")
+    @cookie_required
     def get(self, id):
         try:
             foodPlace = FoodPlaceService.getByID(id)
@@ -22,6 +25,7 @@ class FoodPlace(Resource):
 class FoodPlaceUpdate(Resource):
     @api.expect(_foodFields)
     @jwt_required()
+    @cookie_required
     @api.doc(security="Bearer")
     def put(self, id):
         payload = request.get_json()

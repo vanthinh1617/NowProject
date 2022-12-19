@@ -7,10 +7,19 @@ from flask_jwt_extended import JWTManager
 from app import create_app, blueprint
 from app.util.helpers import _throw
 from app.service.user_service import UserService
-
 import app.util.jwt
+from flask import request,Response
+
+@blueprint.before_request
+def hook():
+    print(request.base_url)
+    # if request.base_url is None
+    # if request.cookies.get('lang') is None: 
+    #     return{"message": "Missing cookie lang"}, 406
+    
 app = create_app(__name__)
 app.register_blueprint(blueprint)
+
 
 jwt = JWTManager(app)
 

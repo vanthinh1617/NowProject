@@ -15,6 +15,7 @@ class FoodPlaceService:
 
     @staticmethod
     def getByID(id):
+        lang = request.cookies.get('lang')
         result = foodPlacesCollection.aggregate([
             {"$match": {"_id": ObjectId(id)}},
             {"$lookup" : {
@@ -31,7 +32,39 @@ class FoodPlaceService:
                     {"$project": { "_id": 0, "value": {"$arrayElemAt": ["$images", 0] }}},
                 ],
                 "as": "images"
-            }}
+            }},
+            {"$lookup" : {
+                "from": "foodCategories",
+                "let": {"foodPlaceID": "$_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$eq": ["$foodPlaceID", "$$foodPlaceID"] 
+                            }
+                        }
+                    },
+                    {"$lookup" : {
+                        "from": "foodCategoryLangs",
+                        "let": {"categoryID": "_id"},
+                        "pipeline": [
+                           { 
+                                "$match": {
+                                    "$expr": {
+                                        "$and": [
+                                            { "$eq": ["$foodCategoryID", "$$categoryID"] },
+                                            {"eq": ["$lang",lang]}
+                                        ]
+                                       
+                                    }  
+                                }
+                            }
+                        ],
+                        "as": "langs"
+                    }}
+                ],
+                "as": "categories"
+            }}           
         ])
 
         return list(result)
