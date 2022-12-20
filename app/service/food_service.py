@@ -46,19 +46,20 @@ class FoodPlaceService:
                     },
                     {"$lookup" : {
                         "from": "foodCategoryLangs",
-                        "let": {"categoryID": "_id"},
+                        "let": {"categoryID": "$_id"},
                         "pipeline": [
                            { 
                                 "$match": {
                                     "$expr": {
                                         "$and": [
                                             { "$eq": ["$foodCategoryID", "$$categoryID"] },
-                                            {"eq": ["$lang",lang]}
+                                            {"$eq": ["$lang",lang]}
                                         ]
                                        
                                     }  
                                 }
-                            }
+                            },
+                            {"$project": {"_id": 0, "categoryName": 1}}
                         ],
                         "as": "langs"
                     }}
