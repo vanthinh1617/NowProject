@@ -59,28 +59,24 @@ class FoodPlaceService:
                                     }  
                                 }
                             },
-                            {"$project": {"_id": 0, "categoryName": 1}}
+                            {"$project": {"_id": 0, "categoryName": 1,"lang": 1}}
                         ],
-                        "as": "langs"
-                    }}
+                        "as": "category"
+                    }},
+                    {"$project": {"_id": 0, "category": 1}}
                 ],
                 "as": "categories"
-            }}           
+            }} 
+
         ])
 
-        return list(result)
+        return list(result)[0]
 
     @staticmethod
     def create(payload):
         try:
-            lang = request.cookies.get('lang')
-            user: Users = get_current_user()
             food = FoodPlaces(**payload)
             id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
-            if payload['categories'] and id is None:
-                for category in payload['categories']: 
-                    FoodCategoryService.save(category, lang, id)
-
             return {"message": "create success", "code": 200}
         except Exception as e:
             _throw(e)
@@ -113,31 +109,5 @@ class FoodPlaceService:
 
 
 
-class FoodCategoryService:
-
-    # def getList(lang: str = 'vn'):
-
-    #     return foodCategoryLangsCollection.aggregate()
-    @staticmethod
-    def save(lang: str ="vn", name: str = "", foodPLaceID: int = 0):
-        if name is None or foodPLaceID == 0:
-            _throw('parameter isvalid')
-
-        foodPlace =  foodPlacesCollection.find_one({"_id": ObjectId(foodPLaceID)})
-
-        FoodPlaceService.assertFoodPlace(foodPLaceID)
-        
-        foodCategory = foodCategoriesCollection.insert_one({
-            "foodPlaceID": foodPLaceID
-        })
-        
-        foodCateLangID =  foodCategoryLangsCollection.insert_one({
-            "categoryName": name,
-            "lang": lang,
-            "foodCategoryID": foodCategory.inserted_id
-        }).inserted_id
-
-        if foodCateLangID is None: _throw("can't create category")
-        return True
 
     

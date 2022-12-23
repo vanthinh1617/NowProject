@@ -46,7 +46,7 @@ class Users(GenericModel):
 
 class FoodCategories(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
-    oldDishTypeID: PydanticObjectId
+    oldDishTypeID: Optional[PydanticObjectId]
     foodPlaceID: PydanticObjectId
     createTime: datetime = Field(default_factory=datetime.utcnow)
 

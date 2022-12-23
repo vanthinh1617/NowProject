@@ -33,7 +33,6 @@ def user_lookup_callback(_jwt_header, jwt_data):
     user = UserService.get_by_user_name(identity.get('username'))
     return user
 
-
 if __name__ == '__main__':  
     app.run(debug=True)
   
