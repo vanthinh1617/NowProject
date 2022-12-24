@@ -104,8 +104,7 @@ class FoodPlaceService:
     def assertFoodPlace(food:FoodPlaces):
         user: Users = get_current_user()
         if not food : _throw(NotFoundDataException("can't find food place"))
-        if user is not None:
-            if food.userID != user.id: _throw(NotPermissionException("Not permission"))
+        if food.userID != user.id: _throw(NotPermissionException("Not permission"))
 
 
 

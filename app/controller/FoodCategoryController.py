@@ -33,3 +33,11 @@ class UpdateCategory(Resource):
             return _success(inspect.stack(), FoodCategoryService.update(payload))
         except Exception as e:
             _throw(e)   
+
+@api.route('/delete/<id>')
+class DeleteCategory(Resource):
+    def post(self, id):
+        try:
+            return _success(inspect.stack(), FoodCategoryService.deleteByID(id))
+        except Exception as e: 
+            _throw(e)
