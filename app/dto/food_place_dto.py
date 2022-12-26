@@ -1,8 +1,11 @@
 from flask_restx import Namespace, fields
-
 class FoodPlaceDto:
     api = Namespace("FoodPlace",  description="Api food place document",)
     
+    day_of_week_fields =  api.model(name="TimeFields",model= {
+                                "OPEN": fields.Integer,
+                                "CLOSE": fields.Integer
+                                })
     food_place_fields= api.model("FoodPlaceModel", {
         "_id": fields.String(),
         "userID": fields.String(),
@@ -18,6 +21,15 @@ class FoodPlaceDto:
         "status": fields.Integer(),
         "avgRating": fields.Integer(),
         "totalReview": fields.Integer(),
+        "openTimes": fields.Nested(api.model(name="DaysOfWeekFields",model= {
+                                "MONDAY": fields.List(fields.Nested(day_of_week_fields)),
+                                "TUESDAY": fields.List(fields.Nested(day_of_week_fields)),
+                                "WEDNESDAY":  fields.List(fields.Nested(day_of_week_fields)),
+                                "THURSDAY":  fields.List(fields.Nested(day_of_week_fields)),
+                                "FRIDAY":  fields.List(fields.Nested(day_of_week_fields)),
+                                "SATURDAY":  fields.List(fields.Nested(day_of_week_fields)),
+                                "SUNDAY":  fields.List(fields.Nested(day_of_week_fields))
+                            })),
         "createTime":  fields.String(),
     })
 

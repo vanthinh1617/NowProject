@@ -5,6 +5,7 @@ from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
 from flask import request
+import json
 class FoodPlaceService:
     @staticmethod
     def getList(page= 1, pageSize = 30):
@@ -75,6 +76,9 @@ class FoodPlaceService:
     @staticmethod
     def create(payload):
         try:
+            if payload['openTimes'] != None : 
+                payload['openTimes'] = json.dumps(payload['openTimes'])
+
             food = FoodPlaces(**payload)
             id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
             return {"message": "create success", "code": 200}
@@ -92,6 +96,9 @@ class FoodPlaceService:
     @staticmethod
     def update(id,payload):
         try:
+            if payload['openTimes'] != None : 
+                payload['openTimes'] = json.dumps(payload['openTimes'])
+                
             food = FoodPlaceService.getByID(id)  
             food = FoodPlaces( **{**food,**payload})
             FoodPlaceService.assertFoodPlace(food)

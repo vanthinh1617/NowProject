@@ -11,7 +11,7 @@ class FoodCategoryDto:
         "createTime": fields.String()
     })
 
-    category_mutil_lang = api.model("", {
+    category_mutil_lang = api.model("LangSpecify", {
         "vn": fields.String(),
         "en": fields.String(),
     })

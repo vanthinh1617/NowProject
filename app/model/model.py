@@ -67,6 +67,7 @@ class FoodPlaces(GenericModel):
     status: int = 0
     avgRating: int = 0
     totalReview: int=0
+    openTimes: Optional[Json]
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
 class FoodCategoriesLangs(GenericModel):

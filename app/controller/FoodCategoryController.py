@@ -35,6 +35,7 @@ class UpdateCategory(Resource):
             _throw(e)   
 
 @api.route('/delete/<id>')
+@api.doc(security="Bearer")
 class DeleteCategory(Resource):
     def post(self, id):
         try:
