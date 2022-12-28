@@ -6,5 +6,5 @@ class DeliveryDto:
 
     search_global_field = api.model("Search global field", {
         "cityID": fields.Integer(),
-        "combine_categories": fields.Integer()
+        "combineCategories": fields.Integer()
     })
