@@ -15,6 +15,7 @@ foodCategoryLangsCollection = db.foodCategoryLangs
 foodOpenTimesCollection = db.foodOpenTimes
 foodImagesCollection = db.foodImages
 foodSocialNetworkCollection = db.foodSocialNetworks
+foodTypeAndStyleLangsCollection = db.foodTypeAndStyleLangsCollection
 foodTypeAndStylesCollection = db.foodTypeAndStyles
 foodPromotionsCollection = db.foodPromotions
 foodReviewsCollection = db.foodPreviews

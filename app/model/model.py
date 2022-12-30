@@ -114,17 +114,25 @@ class FoodSocialNetworks(GenericModel):
     
 class FoodTypeAndStyles(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
-    foodPlaceID: PydanticObjectId
+    foodPlaceID: Optional[PydanticObjectId] 
     type: Optional[str]
     dining_times: Optional[str]
     prices: Optional[str]
     styles: Optional[str]
     goodFor: Optional[str]
     standFoods: Optional[Text]
-    capacity: PydanticObjectId
+    capacity: Optional[PydanticObjectId] 
     lastAdminssionTime: Optional[Text]
     preparationTime: Optional[Text]
     holiday: Optional[Text]
+    createTime: datetime = Field(default_factory=datetime.utcnow)
+    
+class FoodTypeAndStyleLangs(GenericModel):
+    id: Optional[PydanticObjectId] = Field(None, alias="_id")
+    foodTyleAndStyleID: PydanticObjectId
+    description: Optional[str]
+    recommendation: Optional[str]
+    lang: str
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
 class FoodPromotion(GenericModel):
