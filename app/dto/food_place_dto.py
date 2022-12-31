@@ -21,6 +21,7 @@ class FoodPlaceDto:
         "status": fields.Integer(),
         "avgRating": fields.Integer(),
         "totalReview": fields.Integer(),
+        "type": fields.String(),
         "openTimes": fields.Nested(api.model(name="DaysOfWeekFields",model= {
                                 "MONDAY": fields.List(fields.Nested(day_of_week_fields)),
                                 "TUESDAY": fields.List(fields.Nested(day_of_week_fields)),

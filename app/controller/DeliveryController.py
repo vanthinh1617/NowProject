@@ -3,7 +3,7 @@ from flask import request
 from app.dto.delivery_dto import DeliveryDto
 from app.util.helpers import _success, _throw
 from app.service.delivery_service import DeliveryService
-import inspect
+import inspect, i18n
 api = DeliveryDto.api
 _searchGlobalField = DeliveryDto.search_global_field
 
