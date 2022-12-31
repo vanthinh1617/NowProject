@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
+from app.service.food_type_and_style import FoodTypeAndStyleService
 from flask import request
 import json
 class FoodPlaceService:
