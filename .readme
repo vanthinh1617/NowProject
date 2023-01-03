@@ -1,0 +1,18 @@
+1 anh em cài đặt python 3.11 trở lên để không mắc phải các lỗi
+==
+2 Sau đó anh em active môi trường bằng chạy lệnh command trong console "scripts/activate" (windown/linux)
+==
+3 có các file app.py và craw.py
+    app.py để chạy serve để chạy dùng command python app.py
+    craw.py để craw dữ liệu và sử dụng một số chức năng chạy tương tự app.py
+==
+4 Truy cập vào link 127.0.0.1:5000/api
+    Anh em vào phần user đăng ký/Đăng nhập một tài khoảng user để lấy token để thực hiện một số chức năng cần xác thực
+
+NOTE: 
+    _App có sử dụng swagger api documentation
+   _ App sử dụng i18n file yml ở các mục translate hổ trợ ngôn ngữ vi và en 
+    mặc định là tiếng việt để thay đổi thì mỗi request trong header anh em đặt "x-food-client-language'" :"en" trong header để sử dụng ngôn ngữ tiếng anh
+
+
+ 

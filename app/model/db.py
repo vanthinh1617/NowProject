@@ -24,3 +24,20 @@ foodReviewReportsCollection = db.foodReviewReports
 
 def initialize_db(app):
     mongo.init_app(app)
+
+def dropCollection():
+    userCollection.drop({})
+    foodDrinksCollection.drop({})
+    foodPlacesCollection.drop({})
+    foodVideosCollection.drop({})
+    foodLocationsCollection.drop({})
+    foodCategoriesCollection.drop({})
+    foodCategoryLangsCollection.drop({})
+    foodOpenTimesCollection.drop({})
+    foodImagesCollection.drop({})
+    foodSocialNetworkCollection.drop({})
+    foodTypeAndStyleLangsCollection.drop({})
+    foodTypeAndStylesCollection.drop({})
+    foodPromotionsCollection.drop({})
+    foodReviewsCollection.drop({})
+    foodReviewReportsCollection.drop({})

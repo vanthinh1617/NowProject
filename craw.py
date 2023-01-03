@@ -1,39 +1,50 @@
 """https://www.youtube.com/watch?v=bM50i7sKwwM"""
 import requests
 import json 
+from app.model.db import dropCollection
 from app.model.db import foodPlacesCollection,foodCategoriesCollection, foodTypeAndStylesCollection, foodTypeAndStyleLangsCollection
 from app.model.model import FoodPlaces,FoodCategories,FoodImages,FoodOpenTimes,FoodTypeAndStyleLangs, FoodTypeAndStyles
 from bson.objectid import ObjectId
 from pymongo import MongoClient
-from craw.dbConfig import getclient
-from craw.util.helper import splitUrl
+from craw.dbConfig import getClient
+from craw.util.helper import splitUrl, chunks
 import traceback
 
 
-client = getclient()
-
+metadata =  None
+client = None
+cityID = 217
 post_header  = {
-"x-foody-access-token":"",
-"x-foody-api-version": "1",
-"x-foody-app-type":"1004",
-"x-foody-client-id":"",
-"x-foody-client-type": "1",
-"x-foody-client-language": "vi",
-"x-foody-client-version":"3.0.0"
+    "x-foody-access-token":"",
+    "x-foody-api-version": "1",
+    "x-foody-app-type":"1004",
+    "x-foody-client-id":"",
+    "x-foody-client-type": "1",
+    "x-foody-client-language": "vi",
+    "x-foody-client-version":"3.0.0"
 }
 
+def getDetail(id = None):
+    deliveryID = id
+    if id is None:
+        deliveryID = input("mời nhập dilvery id: ")
 
+    idType = 2 
+    url = f"https://gappapi.deliverynow.vn/api/delivery/get_detail?id_type={idType}&request_id={deliveryID}"
+    response = requests.get(url= url, headers= post_header)
+    content = json.loads( response.content.decode('utf-8'))
+   
+    return response.content.decode('utf-8')
+    
 
-def getInfo():
+def getRestaurantInfos(restaurantIds):
     url = "https://gappapi.deliverynow.vn/api/delivery/get_infos"
-    r = open('delivery.json','r')
-    json_delivery_info = json.load(r)
+    data = json.dumps({ "restaurant_ids": restaurantIds})
+    
+    response = requests.post(url= url, data= data, headers= post_header)
+    return response.content.decode('utf-8')
 
-    response = requests.post(url,data= json.dumps(json_delivery_info), headers=post_header)
-    with open('delivery_info.json', "w", encoding="utf-8") as f:
-        f.write(response.content.decode('utf-8'))
-
-def search_global():
+def searchGlobal():
     url = "https://gappapi.deliverynow.vn/api/delivery/search_global"
     post_content = {
         "category_group": 1,
@@ -47,9 +58,7 @@ def search_global():
         "full_restaurant_ids": True
     }
     response = requests.post(url,data= json.dumps(post_content), headers=post_header)
-    f = open('delivery.json','w')
-    f.write(response.content.decode('utf-8'))
-    f.close()
+    return response.content.decode('utf-8')
 
 
 
@@ -71,82 +80,77 @@ def getMetadata():
     
     return response.content.decode('utf-8')
 
-def importData():
-    print("1: lưu vào file")
-    print("2: lưu vào database: ")
-    manager = input("Nhập lựa chọn: ")
-    if manager == 1:
-        userID = input("Nhập userID:  ")
-        with open('delivery_info.json', "r", encoding="utf-8") as f:
-            delivery_info_json = json.load(f)
-            items = []
+def cloneData():
+    try:
+        response = json.loads(searchGlobal())
+        results = response['reply']['search_result'][0]['restaurant_ids']
+        nowRawCollection = client['nowRaw']
+        chunkedArray = list(chunks(results, 25))
+        
+        for ids in chunkedArray:
+            json.dumps({ "restaurant_ids": list(ids)})
+            response = json.loads(getRestaurantInfos(ids))
+            nowRawCollection.insert_many(response['reply']['delivery_infos'])
 
-            for place in delivery_info_json['delivery_infos']:
-                foodPlace = {
-                                "name": place['name'], 
-                                "phone": place['phones'][0],
-                                "userID": ObjectId(userID),
-                                'images': place['photos']
-                            }
-                temp = FoodPlaces(**foodPlace)
-                items.append(temp.to_json())
-
-            foodPlaceIds = db.foodPlaces.insert_many(items).inserted_ids
-
-            for intex,place in enumerate(items):
-                place['_id'] =  foodPlaceIds[intex]
-
-            for index,place in enumerate(delivery_info_json['delivery_infos']):
-                atTheEnd = len(place["photos"]) - 1
-                url =   place['photos'][atTheEnd]['value']
-                url = splitUrl(place['photos'][atTheEnd]['value'])
-                food= FoodImages()
-                food.images = [url]
-                food.foodPlaceID = items[index]['_id']
-                db.foodImages.insert_one(food.to_bson())
-
-def getCategories():
-    metadata = json.loads( getMetadata() )
-    categories = metadata['reply']['country']['now_services'][0]["categories"]
-    try: 
-        for category in categories:
-            foodStyle = FoodTypeAndStyles()
-            # foodStyleLangs = FoodTypeAndStyleLangs()
-            foodStyle.type = category['code']
-            foodStyleID = foodTypeAndStylesCollection.insert_one(foodStyle.to_json()).inserted_id
-            # foodStyleLangs.foodTyleAndStyleID = foodStyleID
-            # foodStyleLangs.lang = "vn"
-
-
-            # for x, i  in category.items():
-            #     print(i)
-            #     break
+        return True
     except Exception as e:
+        traceback.print_exc()
         print(e)
-    
 
+
+def getIds():
+    try:
+        url = "https://gappapi.deliverynow.vn/api/promotion/get_ids"
+        response = requests.post(url, headers= post_header, data= json.dumps(
+            {
+                "city_id": cityID,
+                "foody_service_id": 1,
+                "sort_type": 0,
+                "promotion_status": 1
+            }
+        ))
+        return response.content.decode('utf-8')
+        # return 
+    
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
+       
+def setCity():
+    try:
+        metadata = json.loads(getMetadata())
+        for city in metadata['reply']['country']['cities']:
+            print(f"Thành phố: {city['name']}  code: {city['id']}" )
+        cityID = int(input("Chọn thành phố: "))
+    except Exception as e:
+        traceback.print_exc()
+  
 
 def schedule(num):
     match num: 
         case 1:
+            cloneData()
             pass
         case 2:
             pass
         case 3:
+            getDetail()
             pass
         case 4:
-            getCategories()
+            pass
+        case 5:
+            dropCollection()
         case _:
             pass
    
+if metadata is None:
+    metadata = getMetadata()
 
 def main():
     while(True): 
         print("==============")
-        print("1: search_global")
-        print("2: get info")
-        print("3: importData")
-        print("4: clone categories")
+        print("1: clone data")
+        print("5: xoá toàn bộ collection")
         print("0: thoát ra")
         print("==============")
         num  = int(input("Mời nhập lựa chọn:  "))
@@ -154,10 +158,9 @@ def main():
         if num == 0 : break
 
 if __name__ == '__main__':
-    # search_global()
-    # getInfo()
-    #importData()
     try:
+        client = getClient()
+        setCity()
         main()
     except Exception as e:
         print (e)
