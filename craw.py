@@ -1,18 +1,18 @@
 """https://www.youtube.com/watch?v=bM50i7sKwwM"""
 import requests
 import json 
-from app.model.db import dropCollection
-from app.model.db import foodPlacesCollection,foodCategoriesCollection, foodTypeAndStylesCollection, foodTypeAndStyleLangsCollection
-from app.model.model import FoodPlaces,FoodCategories,FoodImages,FoodOpenTimes,FoodTypeAndStyleLangs, FoodTypeAndStyles
-from bson.objectid import ObjectId
-from pymongo import MongoClient
-from craw.dbConfig import getClient
+from app.model.db import foodPlacesCollection,foodCategoriesCollection, foodCategoryLangsCollection, foodTypeAndStylesCollection, foodTypeAndStyleLangsCollection, foodLocationsCollection
+from app.model.model import FoodPlaces,FoodCategories,FoodImages,FoodOpenTimes,FoodTypeAndStyleLangs, FoodTypeAndStyles, FoodLocations
+from app.service.user_service import UserService
+from app.util.time import stringToDate, timeToSecond
+from craw.model.db import client
 from craw.util.helper import splitUrl, chunks
+from craw.model.db import dropCollection
+from craw.model.db import nowRawCollection
 import traceback
 
-
+userSession = None 
 metadata =  None
-client = None
 cityID = 217
 post_header  = {
     "x-foody-access-token":"",
@@ -62,16 +62,6 @@ def searchGlobal():
 
 
 
-def cloneImages():
-    with open('delivery_info.json', "r", encoding="utf-8") as f:
-        delivery_info_json = json.load(f)
-        for index,place in enumerate(delivery_info_json['delivery_infos']):
-            atTheEnd = len(place["photos"]) - 1
-            url =   place['photos'][atTheEnd]['value']
-            res = requests.get(url)
-            url = splitUrl(place['photos'][atTheEnd]['value'])
-            with open('app/static/photos/'+url,'wb') as f:
-                f.write(res.content)
 
    
 def getMetadata():
@@ -126,12 +116,111 @@ def setCity():
         traceback.print_exc()
   
 
+
+def importRawToDB():
+    results = list(nowRawCollection.find({}))
+
+    for delivery in results:
+        foodPlace = {
+            "userID" : userSession.id,
+            "oldRestaurentID" : delivery['id'],
+            "name" : delivery['name'],
+            "phone" : delivery['phones'][0],
+            # "email" : delivery['email'],
+            "website" : delivery['url'],
+            "images" : json.dumps(delivery['photos']),
+            "openTimes": None,
+        }
+        if delivery['operating'] is not None: 
+            openTime = stringToDate(delivery['operating']['open_time'])
+            closeTime = stringToDate(delivery['operating']['close_time'])
+            openTimes = {
+                    "MONDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "TUESDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "WEDNESDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "THURSDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "FRIDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "SATURDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ],
+                    "SUNDAY": [
+                        {
+                            "OPEN": timeToSecond(openTime),
+                            "CLOSE": timeToSecond(closeTime)
+                        } 
+                    ]
+                }
+            foodPlace['openTimes'] = json.dumps(openTimes)
+            
+        foodPlace = FoodPlaces(**foodPlace)
+        id = foodPlacesCollection.insert_one(foodPlace.to_json()).inserted_id
+
+        for category in delivery['categories']:
+            id = foodCategoriesCollection.insert_one({
+                "foodPlaceID": id
+            }).inserted_id
+
+            foodCategoryLangsCollection.insert_one({
+                "foodCategoryID": id,
+                "lang": "vi",
+                "categoryName": category
+            })
+
+        if delivery['location_url'] is not None: 
+            foodLocationsCollection.insert_one({
+                "foodPlaceID": id,
+                "address": delivery['address'],
+                "city": delivery["location_url"],
+                "country": "Việt Nam"
+            })
+
+
+        if delivery['photos'] is not None: 
+            for photo in delivery['photos']:
+                response = requests.get(photo['value'])
+                width = photo['width']
+                height = photo['height']
+                pathUrl = f"app/static/photos/s{width}x{height}/{photo['value'].split('/')[-1]}"
+                import os
+                os.makedirs(os.path.dirname(pathUrl), exist_ok=True)
+                with open(pathUrl, "wb+") as f: 
+                    f.write(response.content)
+                    
 def schedule(num):
     match num: 
         case 1:
             cloneData()
             pass
         case 2:
+            importRawToDB()
             pass
         case 3:
             getDetail()
@@ -150,6 +239,7 @@ def main():
     while(True): 
         print("==============")
         print("1: clone data")
+        print("2: importData")
         print("5: xoá toàn bộ collection")
         print("0: thoát ra")
         print("==============")
@@ -159,10 +249,14 @@ def main():
 
 if __name__ == '__main__':
     try:
-        client = getClient()
+        if userSession is None: 
+            userSession = UserService.get_by_user_name(input("Nhập username:  "))
+            if userSession is None:
+                raise Exception("Cant find user ")
         setCity()
         main()
     except Exception as e:
+        traceback.print_exc()
         print (e)
         print("\==============")
         print("lựa chọn không hợp lệ")

@@ -60,5 +60,7 @@ class UserService:
     @staticmethod
     def get_by_user_name(user_name):
         user=  userCollection.find_one({"username": user_name})
+        if user is None:
+           raise Exception("Cant find user")
         user = Users(**user)
         return user
