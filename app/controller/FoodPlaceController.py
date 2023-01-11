@@ -26,9 +26,8 @@ class FoodPlaceUpdate(Resource):
     @api.expect(_foodFields)
     @jwt_required()
     @cookie_required
-    @api.doc(security="Bearer")
-    def put(self, id):
-        payload = request.get_json()
+    def post(self, id):
+        payload = request.get_data()
         return _success(inspect.stack(), FoodPlaceService.update(id=id, payload=payload))
     
 
@@ -46,14 +45,12 @@ class FoodPlaceList(Resource):
 @api.expect(_foodFields)
 class FoodCreate(Resource):
     @jwt_required()
-    @api.doc(security="Bearer")
     def post(self):
             payload = request.get_json()
             return _success(inspect.stack(),  FoodPlaceService.create(payload))
   
 
 @api.route('/delete/<id>')
-@api.doc(security="Bearer")
 class FoodDelete(Resource):
         def delete(self, id):
             return _success(inspect.stack(), FoodPlaceService.deleteByID(id))

@@ -19,8 +19,8 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
     return response
 
-#https://aaronluna.dev/series/flask-api-tutorial/part-3/
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
+
 
 api = Api(blueprint,   authorizations=authorizations)
 api.add_namespace(user_namespace,path='/user')
@@ -28,10 +28,12 @@ api.add_namespace(food_place_namespace, path="/food_place")
 api.add_namespace(delivery_namespace, path="/delivery")
 api.add_namespace(category_namespace,path="/category")
 api.add_namespace(food_type_style,path="/category")
+
 def create_app(name="default"):
     app = Flask(name, static_folder="static")
     app.config["MONGO_URI"] = "mongodb://localhost:27017/"
-    app.config["JWT_SECRET_KEY"] = Const.JWT_CONFIG.SECRET_KEY    # Change this "super secret" with something else!
+    app.config["JWT_SECRET_KEY"] = Const.JWT_CONFIG.SECRET_KEY    
+
     # app.config["JWT_ACCESS_TOKEN_EXPIRES"] = get_exprive_time()
     initialize_db(app)
     return app

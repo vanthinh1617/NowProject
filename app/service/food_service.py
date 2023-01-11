@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
+from app.util.file import SaveFileToLocal
 from app.service.food_type_and_style import FoodTypeAndStyleService
 from flask import request
 import json
@@ -20,21 +21,6 @@ class FoodPlaceService:
         lang = request.cookies.get('lang')
         result = foodPlacesCollection.aggregate([
             {"$match": {"_id": ObjectId(id)}},
-            {"$lookup" : {
-                "from": "foodImages",
-                "let": {"placeID": "$_id"},
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$eq": ["$foodPlaceID", "$$placeID"] 
-                            }
-                        }
-                    },
-                    {"$project": { "_id": 0, "value": {"$arrayElemAt": ["$images", 0] }}},
-                ],
-                "as": "images"
-            }},
             {"$lookup" : {
                 "from": "foodCategories",
                 "let": {"foodPlaceID": "$_id"},
@@ -79,7 +65,7 @@ class FoodPlaceService:
         try:
             if payload['openTimes'] != None : 
                 payload['openTimes'] = json.dumps(payload['openTimes'])
-
+         
             food = FoodPlaces(**payload)
             id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
             return {"message": "create success", "code": 200}
@@ -100,6 +86,10 @@ class FoodPlaceService:
             if payload['openTimes'] != None : 
                 payload['openTimes'] = json.dumps(payload['openTimes'])
                 
+            if 'files'  in request.files:  
+                files = request.files['file']
+                SaveFileToLocal.process(files)
+        
             food = FoodPlaceService.getByID(id)  
             food = FoodPlaces( **{**food,**payload})
             FoodPlaceService.assertFoodPlace(food)

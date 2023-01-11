@@ -5,7 +5,7 @@ from app.model.model import FoodPlaces,FoodCategories,FoodImages,FoodOpenTimes,F
 from app.util.time import stringToDate, timeToSecond
 from craw.model.db import nowRawCollection
 from bson.objectid import ObjectId
-import traceback
+import traceback, os
 
 class DeliveryService:
 
@@ -18,7 +18,7 @@ class DeliveryService:
             "phone" : delivery['phones'][0],
             # "email" : delivery['email'],
             "website" : delivery['url'],
-            "images" : json.dumps(delivery['photos']),
+            "images" : json.dumps([delivery['photos'][-1]['value'].split('/')[-1]]),
             "openTimes": None,
         }
         if delivery['operating'] is not None and delivery['operating']['status'] == 1: 
@@ -94,12 +94,10 @@ class DeliveryService:
 
         if  cloneImages is True:
             if delivery['photos'] is not None:
-                for photo in delivery['photos']:
-                    response = requests.get(photo['value'])
-                    width = photo['width']
-                    height = photo['height']
-                    pathUrl = f"app/static/photos/s{width}x{height}/{photo['value'].split('/')[-1]}"
-                    import os
-                    os.makedirs(os.path.dirname(pathUrl), exist_ok=True)
-                    with open(pathUrl, "wb+") as f: 
+                length = len(delivery['photos'])
+                photo = delivery['photos'][-1]
+                response = requests.get(photo['value'])
+                pathUrl = f"app/static/photos/{photo['value'].split('/')[-1]}"
+                os.makedirs(os.path.dirname(pathUrl), exist_ok=True)
+                with open(pathUrl, "wb+") as f: 
                         f.write(response.content)
