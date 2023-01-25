@@ -5,10 +5,8 @@
 
 from flask_jwt_extended import JWTManager
 from app import create_app, blueprint
-from app.util.helpers import _throw
 from app.service.user_service import UserService
 from app.util.i18n import run as translate, beforeRequest as i18nBeforeRequest
-from flask import request,Response
 import app.util.jwt
 
 app = create_app(__name__)

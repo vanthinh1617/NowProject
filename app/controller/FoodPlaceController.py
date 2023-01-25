@@ -24,10 +24,10 @@ class FoodPlace(Resource):
 @api.route('/update/<id>')
 class FoodPlaceUpdate(Resource):
     @api.expect(_foodFields)
-    @jwt_required()
+    # @jwt_required()
     @cookie_required
     def post(self, id):
-        payload = request.get_data()
+        payload = request.form.to_dict()
         return _success(inspect.stack(), FoodPlaceService.update(id=id, payload=payload))
     
 

@@ -7,7 +7,7 @@ from app.util.exception import NotPermissionException, NotFoundDataException
 from app.util.file import SaveFileToLocal
 from app.service.food_type_and_style import FoodTypeAndStyleService
 from flask import request
-import json
+import json, os
 class FoodPlaceService:
     @staticmethod
     def getList(page= 1, pageSize = 30):
@@ -57,15 +57,18 @@ class FoodPlaceService:
             }} 
 
         ])
+        if len(list(result)) ==  0:
+           raise Exception("can't find user")
 
-        return list(result)[0]
+        return list(result)[0] 
 
     @staticmethod
     def create(payload):
         try:
             if payload['openTimes'] != None : 
                 payload['openTimes'] = json.dumps(payload['openTimes'])
-         
+
+
             food = FoodPlaces(**payload)
             id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
             return {"message": "create success", "code": 200}
@@ -87,14 +90,14 @@ class FoodPlaceService:
                 payload['openTimes'] = json.dumps(payload['openTimes'])
                 
             if 'files'  in request.files:  
-                files = request.files['file']
+                files = request.files.getlist('files')
                 SaveFileToLocal.process(files)
         
-            food = FoodPlaceService.getByID(id)  
-            food = FoodPlaces( **{**food,**payload})
-            FoodPlaceService.assertFoodPlace(food)
-            foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
-            return food.to_json()
+            # food = FoodPlaceService.getByID(id)  
+            # food = FoodPlaces( **{**food,**payload})
+            # FoodPlaceService.assertFoodPlace(food)
+            # foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
+            # return food.to_json()
         except Exception as e:
             _throw(e)
 

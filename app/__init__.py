@@ -30,7 +30,7 @@ api.add_namespace(category_namespace,path="/category")
 api.add_namespace(food_type_style,path="/category")
 
 def create_app(name="default"):
-    app = Flask(name, static_folder="static")
+    app = Flask(name, static_folder="app/static")
     app.config["MONGO_URI"] = "mongodb://localhost:27017/"
     app.config["JWT_SECRET_KEY"] = Const.JWT_CONFIG.SECRET_KEY    
 
