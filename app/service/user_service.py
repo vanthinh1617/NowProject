@@ -47,14 +47,14 @@ class UserService:
             _throw(e)
 
     @staticmethod
-    def getLists(page:int = 1, pageSize: int= 30):
+    def get_lists(page:int = 1, pageSize: int= 30):
         page = int(page)
         pageSize = int(pageSize)
         userList =  userCollection.find().skip((page - 1) * pageSize).limit(pageSize)
         return   list(userList)
 
     @staticmethod
-    def getUserByID(id):
+    def get_by_id(id):
         return userCollection.find_one({"_id": ObjectId(id)})
 
     @staticmethod

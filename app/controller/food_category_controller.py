@@ -39,6 +39,6 @@ class UpdateCategory(Resource):
 class DeleteCategory(Resource):
     def post(self, id):
         try:
-            return _success(inspect.stack(), FoodCategoryService.deleteByID(id))
+            return _success(inspect.stack(), FoodCategoryService.delete_by_id(id))
         except Exception as e: 
             _throw(e)

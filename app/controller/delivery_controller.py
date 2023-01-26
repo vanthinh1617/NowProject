@@ -12,7 +12,7 @@ _searchGlobalField = DeliveryDto.search_global_field
 class Delivery(Resource):
     def post(self):
         payload = request.get_json()
-        return _success(inspect.stack(), DeliveryService.searchGlobal(payload))
+        return _success(inspect.stack(), DeliveryService.search_global(payload))
 
 
 

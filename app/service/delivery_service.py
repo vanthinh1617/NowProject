@@ -1,5 +1,5 @@
 
-from app.util.time import timeToSecond
+from app.util.time import time_to_second
 from app.model.db import foodPlacesCollection
 from bson import ObjectId
 import datetime
@@ -7,7 +7,7 @@ import datetime
 class DeliveryService:
     
     @staticmethod
-    def searchGlobal(payload):
+    def search_global(payload):
         pipelines = [
             
         ]
@@ -30,23 +30,23 @@ class DeliveryService:
                 }
             })
         if payload["isOpen"] is True:
-            totalSecond = timeToSecond(datetime.datetime.now())
+            total_second = time_to_second(datetime.datetime.now())
             pipelines.append({
                 "$match": {
                     "$and" : [
                         { "openTimes.MONDAY": {"$exists": True }},
-                        { "openTimes.MONDAY.OPEN": {"$lte": totalSecond }},
-                        { "openTimes.MONDAY.CLOSE": {"$gte": totalSecond }}
+                        { "openTimes.MONDAY.OPEN": {"$lte": total_second }},
+                        { "openTimes.MONDAY.CLOSE": {"$gte": total_second }}
                     ]
                 }
             })
         
         pipelines.append( { "$project": {"_id": 1}})
      
-        foodPlaces = foodPlacesCollection.aggregate(
+        food_places = foodPlacesCollection.aggregate(
             pipeline= pipelines
         )
-        listIds = [ foodPlace["_id"]  for foodPlace in  list(foodPlaces) ]
+        listIds = [ foodPlace["_id"]  for foodPlace in  list(food_places) ]
         
         return  {"ids": listIds}
         

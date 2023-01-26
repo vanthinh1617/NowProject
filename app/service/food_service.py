@@ -4,20 +4,19 @@ from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
-from app.util.file import SaveFileToLocal
 from app.service.food_type_and_style import FoodTypeAndStyleService
 from flask import request
 import json, os
 class FoodPlaceService:
     @staticmethod
-    def getList(page= 1, pageSize = 30):
+    def get_lists(page= 1, page_size = 30):
         page = int(page)
-        pageSize = int(pageSize)
-        listFood =  foodPlacesCollection.find().skip((page -1) * pageSize).limit(pageSize)
-        return list(listFood)
+        page_size = int(page_size)
+        list_food =  foodPlacesCollection.find().skip((page -1) * page_size).limit(page_size)
+        return list(list_food)
 
     @staticmethod
-    def getByID(id):
+    def get_by_id(id):
         lang = request.cookies.get('lang')
         result = foodPlacesCollection.aggregate([
             {"$match": {"_id": ObjectId(id)}},
@@ -57,10 +56,10 @@ class FoodPlaceService:
             }} 
 
         ])
-        if len(list(result)) ==  0:
-           raise Exception("can't find user")
+        result = list(result)
+        FoodPlaceService.assert_food_place(result)
 
-        return list(result)[0] 
+        return result[0]
 
     @staticmethod
     def create(payload):
@@ -76,8 +75,11 @@ class FoodPlaceService:
             _throw(e)
 
     @staticmethod
-    def deleteByID(id):
+    def delete_by_id(id):
         try:
+            food_place = FoodPlaceService.get_by_id(id)
+            FoodPlaceService.assert_food_place(FoodPlaces(**food_place), True)
+
             foodPlacesCollection.delete_one({"_id": ObjectId(id) })
             return {"message": "delete success", "code": 200}
         except Exception as e:
@@ -88,24 +90,25 @@ class FoodPlaceService:
         try:
             if payload['openTimes'] != None : 
                 payload['openTimes'] = json.dumps(payload['openTimes'])
-                
-            if 'files'  in request.files:  
-                files = request.files.getlist('files')
-                SaveFileToLocal.process(files)
         
-            # food = FoodPlaceService.getByID(id)  
-            # food = FoodPlaces( **{**food,**payload})
-            # FoodPlaceService.assertFoodPlace(food)
-            # foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
-            # return food.to_json()
+            food = FoodPlaceService.get_by_id(id)
+            food = FoodPlaces( **{**food,**payload})
+            FoodPlaceService.assert_food_place(food, True)
+            foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
+            return food.to_json()
         except Exception as e:
             _throw(e)
 
     @staticmethod
-    def assertFoodPlace(food:FoodPlaces):
-        user: Users = get_current_user()
+    def assert_food_place(food:FoodPlaces, check_auth = False):
         if not food : _throw(NotFoundDataException("can't find food place"))
-        if food.userID != user.id: _throw(NotPermissionException("Not permission"))
+
+        if type(food) is list:
+            if len(food) == 0: _throw(NotFoundDataException("can't find food place"))
+            
+        if check_auth is True:
+            user: Users = get_current_user()
+            if food.userID != user.id: _throw(NotPermissionException("Not permission"))
 
 
 

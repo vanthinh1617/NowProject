@@ -54,7 +54,7 @@ class FoodCategories(GenericModel):
 class FoodPlaces(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     userID: Optional[PydanticObjectId]
-    oldRestaurentID: str
+    oldRestaurentID: Optional[str]
     name: str
     nameWithoutAccent: Optional[str]
     amennities: Optional[Text]

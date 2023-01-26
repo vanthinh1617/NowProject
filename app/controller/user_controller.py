@@ -45,4 +45,4 @@ class UserById(Resource):
     @api.doc('')
     @api.marshal_with(_user)
     def get(self, id):
-        return _success(inspect.stack(), UserService.getUserByID(id))   
+        return _success(inspect.stack(), UserService.get_by_id(id))   

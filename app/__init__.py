@@ -1,12 +1,12 @@
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, jsonify
 from flask_restx import Api
 from app.util.const import Const
 from app.model.db import initialize_db
-from .controller.UserController import api as user_namespace
-from .controller.FoodPlaceController import api as food_place_namespace
-from .controller.DeliveryController import api as delivery_namespace
-from .controller.FoodCategoryController import api as category_namespace
-from .controller.FoodTypeAndStyleController import api as food_type_style
+from .controller.user_controller import api as user_namespace
+from .controller.food_place_controller import api as food_place_namespace
+from .controller.delivery_controller import api as delivery_namespace
+from .controller.food_category_controller import api as category_namespace
+from .controller.food_types_and_style_controller import api as food_type_style
 from app.util.exception import DuplicateDataException
 from app.util.helpers import _throw
 from app.util.jwt import get_exprive_time

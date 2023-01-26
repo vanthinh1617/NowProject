@@ -23,7 +23,7 @@ class FoodCategoryService:
         return True
      
     @staticmethod
-    def saveToDB(name, foodCategoryID,lang = "vn"):
+    def save_to_db(name, foodCategoryID,lang = "vn"):
         foodCategoryLangsCollection.insert_one({
             "categoryName": name,
             "foodCategoryID": ObjectId(foodCategoryID),
@@ -57,18 +57,18 @@ class FoodCategoryService:
 
     
     @staticmethod
-    def getByID(id):
+    def get_by_id(id):
         return foodCategoriesCollection.find_one(id)
 
     @staticmethod
-    def assertCategory(category: FoodCategories):
+    def assert_category(category: FoodCategories):
         if not category : _throw(NotFoundDataException("can't find category"))
 
         foodPlace = FoodPlaceService.getByID(category.foodPlaceID)
         FoodPlaceService.assertFoodPlace(FoodPlaces(**foodPlace))
 
     @staticmethod
-    def deleteByID(id):
+    def delete_by_id(id):
         category = FoodCategoryService.getByID(id)
         FoodCategoryService.assertCategory(category= category)
 

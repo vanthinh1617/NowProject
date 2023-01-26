@@ -16,7 +16,7 @@ class FoodPlace(Resource):
     @cookie_required
     def get(self, id):
         try:
-            foodPlace = FoodPlaceService.getByID(id)
+            foodPlace = FoodPlaceService.get_by_id(id)
             return  _success(inspect.stack(), foodPlace)
         except Exception as e:
             _throw(e)
@@ -24,10 +24,10 @@ class FoodPlace(Resource):
 @api.route('/update/<id>')
 class FoodPlaceUpdate(Resource):
     @api.expect(_foodFields)
-    # @jwt_required()
+    @jwt_required()
     @cookie_required
     def post(self, id):
-        payload = request.form.to_dict()
+        payload = request.get_json()
         return _success(inspect.stack(), FoodPlaceService.update(id=id, payload=payload))
     
 
@@ -37,9 +37,9 @@ class FoodPlaceList(Resource):
     def get(self):
         payload = request.args
         page = payload.get('page') if payload.get('page') is not None else 1
-        pageSize = payload.get('pageSize') if payload.get('pageSize') is not None else 50
+        page_size = payload.get('pageSize') if payload.get('pageSize') is not None else 50
 
-        return _success(inspect.stack(),  FoodPlaceService.getList(page = page, pageSize= pageSize))
+        return _success(inspect.stack(),  FoodPlaceService.get_lists(page = page, page_size= page_size))
 
 @api.route("/create")
 @api.expect(_foodFields)
@@ -53,4 +53,4 @@ class FoodCreate(Resource):
 @api.route('/delete/<id>')
 class FoodDelete(Resource):
         def delete(self, id):
-            return _success(inspect.stack(), FoodPlaceService.deleteByID(id))
+            return _success(inspect.stack(), FoodPlaceService.delete_by_id(id))
