@@ -103,9 +103,6 @@ class FoodPlaceService:
     def assert_food_place(food:FoodPlaces, check_auth = False):
         if not food : _throw(NotFoundDataException("can't find food place"))
 
-        if type(food) is list:
-            if len(food) == 0: _throw(NotFoundDataException("can't find food place"))
-            
         if check_auth is True:
             user: Users = get_current_user()
             if food.userID != user.id: _throw(NotPermissionException("Not permission"))

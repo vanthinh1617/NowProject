@@ -13,14 +13,14 @@ class FoodCategoryService:
                 "foodPlaceID":  ObjectId(payload['foodPlaceID'])
             }).inserted_id
 
-            if lang['vn'] != "" and lang['vn'] is not None: 
-                FoodCategoryService.saveToDB(lang['vn'], foodCategoryID, 'vn')
+            if "vn" in lang is not None and lang['vn'] != ""  : 
+                FoodCategoryService.save_to_db(lang['vn'], foodCategoryID, 'vn')
                 
-            if lang['en'] != "" and lang['en'] is not None: 
-                FoodCategoryService.saveToDB(lang['en'], foodCategoryID, 'en')
+            if "en" in lang is not None and lang['en'] != "": 
+                FoodCategoryService.save_to_db(lang['en'], foodCategoryID, 'en')
                 
             # cteLang = FoodCategoriesLangs(**lang)
-        return True
+        return {"message": "save category success!"}
      
     @staticmethod
     def save_to_db(name, foodCategoryID,lang = "vn"):
@@ -32,7 +32,7 @@ class FoodCategoryService:
             
     @staticmethod
     def update(payload):
-        category = FoodCategoryService.getByID(ObjectId(payload['foodCategoryID']))
+        category = FoodCategoryService.get_by_id(ObjectId(payload['foodCategoryID']))
         category:FoodCategories = FoodCategories(**category)
         #FoodCategoryService.assertCategory(category=category)
         if payload['categoryLangs']['vn'] != '' and payload['categoryLangs']['vn']  is not  None:
@@ -64,12 +64,12 @@ class FoodCategoryService:
     def assert_category(category: FoodCategories):
         if not category : _throw(NotFoundDataException("can't find category"))
 
-        foodPlace = FoodPlaceService.getByID(category.foodPlaceID)
+        foodPlace = FoodPlaceService.get_by_id(category.foodPlaceID)
         FoodPlaceService.assertFoodPlace(FoodPlaces(**foodPlace))
 
     @staticmethod
     def delete_by_id(id):
-        category = FoodCategoryService.getByID(id)
+        category = FoodCategoryService.get_by_id(id)
         FoodCategoryService.assertCategory(category= category)
 
         return foodCategoriesCollection.delete_one(id)

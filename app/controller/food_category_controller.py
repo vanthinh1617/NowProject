@@ -18,7 +18,7 @@ class CreateCategory(Resource):
     def post(self):
         try:
             payload = request.get_json() 
-            if payload['foodPlaceID'] == "" or payload['foodPlaceID'] is None :  raise Exception("missing field foodPlaceID") 
+            if "foodPlaceID" not in payload  or payload['foodPlaceID'] == ""  :  raise Exception("missing field foodPlaceID") 
             
             return _success(inspect.stack(),  FoodCategoryService.create(payload= payload))
         except Exception as e:
