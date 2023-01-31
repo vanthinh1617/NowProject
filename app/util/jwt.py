@@ -16,4 +16,4 @@ def get_current_user():
     return current_user
 
 def get_exprive_time():
-    return datetime.timedelta(minutes= 60)
+    return datetime.timedelta(days= 1)
