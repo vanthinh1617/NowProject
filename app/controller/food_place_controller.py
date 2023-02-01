@@ -8,14 +8,13 @@ from flask import request
 import inspect, bson, json
 from flask_jwt_extended import jwt_required
 from app.util.middleware import cookie_required
-from app.util.exception import UnprocessableException, NotFoundDataException
+from app.util.exception import  NotFoundDataException
 from app.util.file import save_file_local, remove_file
 from app.model.model import FoodPlaces
 api = FoodPlaceDto.api
 _foodFields= FoodPlaceDto.food_place_fields
 @api.route('/get_by_id/<id>')
 class FoodPlace(Resource):
-    @api.param('lang', _in="cookie")
     @cookie_required
     def get(self, id):
         try:
@@ -96,7 +95,6 @@ class RemoveFile(Resource):
             if remove_file(file_name= name):
                 if food_place.images is not None:
                     food_place.images.remove(name)
-                    print(food_place.images)
                     FoodPlaceService.update(id= food_id, payload= food_place.to_bson())
                 return _success(inspect.stack(), {"message": "Remove success!"})
             else: 

@@ -79,8 +79,12 @@ class FoodPlaceService:
     def delete_by_id(id):
         try:
             food_place = FoodPlaceService.get_by_id(id)
-            FoodPlaceService.assert_food_place(FoodPlaces(**food_place), True)
-
+            food_place = FoodPlaces(**food_place)
+            FoodPlaceService.assert_food_place(food_place, True)
+            if food_place.images is not None:
+                for image in food_place.images:
+                    remove_file(image)
+        
             foodPlacesCollection.delete_one({"_id": ObjectId(id) })
             return {"message": "delete success", "code": 200}
         except Exception as e:
@@ -90,12 +94,8 @@ class FoodPlaceService:
     def update(id,payload):
         try:
             food = FoodPlaceService.get_by_id(id)
-           
             food = {**food,**payload}
-            # food['openTimes'] = json.dumps(food['openTimes'])
-            # food['images'] = json.dumps(food['images'])
             food = FoodPlaces(**food)
-            print(food.images)
             FoodPlaceService.assert_food_place(food, True)
             foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
             return food.to_json()
