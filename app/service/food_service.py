@@ -5,6 +5,7 @@ from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
 from app.service.food_type_and_style import FoodTypeAndStyleService
+from app.util.file  import remove_file
 from flask import request
 import json, os
 class FoodPlaceService:
@@ -88,11 +89,13 @@ class FoodPlaceService:
     @staticmethod
     def update(id,payload):
         try:
-            if payload['openTimes'] != None : 
-                payload['openTimes'] = json.dumps(payload['openTimes'])
-        
             food = FoodPlaceService.get_by_id(id)
-            food = FoodPlaces( **{**food,**payload})
+           
+            food = {**food,**payload}
+            # food['openTimes'] = json.dumps(food['openTimes'])
+            # food['images'] = json.dumps(food['images'])
+            food = FoodPlaces(**food)
+            print(food.images)
             FoodPlaceService.assert_food_place(food, True)
             foodPlacesCollection.update_one({"_id": ObjectId(id) }, {"$set":  food.to_bson()})
             return food.to_json()

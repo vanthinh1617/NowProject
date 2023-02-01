@@ -3,7 +3,7 @@ from flask_restx import abort
 import json
 import bleach
 from app.util.const import Const
-from app.util.exception import DuplicateDataException,NotFoundDataException,NotPermissionException, UnauthorizedException
+from app.util.exception import DuplicateDataException,NotFoundDataException,NotPermissionException, UnauthorizedException, UnprocessableException
 from werkzeug.http import HTTP_STATUS_CODES
 
 def _throw(exception):
@@ -16,6 +16,8 @@ def _throw(exception):
         _not_permission_abort(exception.message)
     elif exceptionType == UnauthorizedException:
         _un_authorized_abort(exception.message)
+    elif exceptionType == UnprocessableException:
+        _un_processable_abort(exception.message)
     else:
         _error_abort(str(exception))
 
@@ -88,3 +90,10 @@ def _duplicate_abort(mess):
         'message': f"{HTTP_STATUS_CODES[409]}: {mess}",
     }
     abort(409, **error)
+
+def _un_processable_abort(mess):
+    error = {
+        'statusCode': 422,
+        'message': f"{HTTP_STATUS_CODES[422]}: {mess}",
+    }
+    abort(422, **error)

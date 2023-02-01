@@ -1,12 +1,13 @@
 """ TUTORIAL OR EXAMPLE DOCUMENT 
     PYDANTIC tutorial: https://www.youtube.com/watch?v=Vj-iU-8_xLs    (validator example, )
 """
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field, Json, validator
 from app.util.objectid import PydanticObjectId
 from typing import Optional,Text, List, Union, Literal, Any
 from bson.objectid import ObjectId
 from datetime import datetime
 from fastapi.encoders import jsonable_encoder
+import json
 
 class GenericModel(BaseModel):
     class Config:
@@ -55,13 +56,13 @@ class FoodPlaces(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     userID: Optional[PydanticObjectId]
     oldRestaurentID: Optional[str]
-    name: str
+    name: Optional[str]
     nameWithoutAccent: Optional[str]
     amennities: Optional[Text]
     phone: Optional[str] 
     email: Optional[str]
     avatar: Optional[str]
-    images: Optional[Json]
+    images: Optional[Json] 
     website: Optional[str]
     maxPrice: Optional[int]
     minPrice: Optional[int]
@@ -71,6 +72,13 @@ class FoodPlaces(GenericModel):
     totalReview: int=0
     openTimes: Optional[Json]
     createTime: datetime = Field(default_factory=datetime.utcnow)
+
+    @validator('openTimes',"images", pre=True)
+    def str_to_json(cls, v):
+        if type(v) == dict:
+            return json.dumps(v)
+        if type(v) == list:
+            return json.dumps(v)
 
 class FoodCategoriesLangs(GenericModel):
     id: Optional[PydanticObjectId]= Field(None, alias="_id")

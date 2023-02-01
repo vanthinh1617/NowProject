@@ -5,9 +5,12 @@ from flask_restx import Resource
 from  ..service.food_service import FoodPlaceService
 from ..util.helpers import _success, _throw
 from flask import request
-import inspect
+import inspect, bson, json
 from flask_jwt_extended import jwt_required
 from app.util.middleware import cookie_required
+from app.util.exception import UnprocessableException, NotFoundDataException
+from app.util.file import save_file_local, remove_file
+from app.model.model import FoodPlaces
 api = FoodPlaceDto.api
 _foodFields= FoodPlaceDto.food_place_fields
 @api.route('/get_by_id/<id>')
@@ -27,8 +30,12 @@ class FoodPlaceUpdate(Resource):
     @jwt_required()
     @cookie_required
     def post(self, id):
-        payload = request.get_json()
-        return _success(inspect.stack(), FoodPlaceService.update(id=id, payload=payload))
+        try:
+            payload = request.get_json()
+            return _success(inspect.stack(), FoodPlaceService.update(id=id, payload=payload))
+        
+        except Exception as e:
+            _throw(e)
     
 
 @api.route('/get_list')
@@ -54,3 +61,45 @@ class FoodCreate(Resource):
 class FoodDelete(Resource):
         def delete(self, id):
             return _success(inspect.stack(), FoodPlaceService.delete_by_id(id))
+
+@api.route("/upload/<id>")
+class UploadImageFoodPlace(Resource):
+    @jwt_required()
+    def post(self, id):
+        try:
+            food_place = FoodPlaceService.get_by_id(id= id)
+            food_place = FoodPlaces(**food_place)
+            FoodPlaceService.assert_food_place(food_place, True)
+            files = request.files.getlist("images")
+            
+            # food_place['images'].extend(save_file_local(files= files))
+            if food_place.images is None:
+                food_place.images = save_file_local(files= files)
+            else:
+                food_place.images.extend(save_file_local(files= files))
+
+            return _success(inspect.stack(), FoodPlaceService.update(id= id, payload= food_place.to_bson()))
+        except Exception as e :
+            _throw(e)
+    
+@api.route("/remove_file/<food_id>")
+class RemoveFile(Resource):
+    @jwt_required()
+    def get(self, food_id):
+        try:
+            name = request.form.get("image_name")
+            food_place = FoodPlaceService.get_by_id(id= food_id)
+            food_place = FoodPlaces(**food_place)
+            FoodPlaceService.assert_food_place(food= food_place, check_auth= True)
+            if name not in food_place.images:
+                raise NotFoundDataException("Not found image")
+            if remove_file(file_name= name):
+                if food_place.images is not None:
+                    food_place.images.remove(name)
+                    print(food_place.images)
+                    FoodPlaceService.update(id= food_id, payload= food_place.to_bson())
+                return _success(inspect.stack(), {"message": "Remove success!"})
+            else: 
+                _throw(NotFoundDataException("Not found image"))
+        except Exception as e:
+            _throw(e)
