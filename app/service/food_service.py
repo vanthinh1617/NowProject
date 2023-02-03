@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
-from app.service.food_type_and_style import FoodTypeAndStyleService
+from app.service.food_type_and_style_service import FoodTypeAndStyleService
 from app.util.file  import remove_file
 from flask import request
 import json, os
@@ -57,10 +57,7 @@ class FoodPlaceService:
             }} 
 
         ])
-        result = list(result)
-        FoodPlaceService.assert_food_place(result)
-
-        return result[0]
+        return dict(result.next()) if result._has_next() else {}
 
     @staticmethod
     def create(payload):
@@ -71,7 +68,7 @@ class FoodPlaceService:
 
             food = FoodPlaces(**payload)
             id = foodPlacesCollection.insert_one(food.to_bson()).inserted_id
-            return {"message": "create success", "code": 200}
+            return food
         except Exception as e:
             _throw(e)
 
@@ -104,11 +101,11 @@ class FoodPlaceService:
 
     @staticmethod
     def assert_food_place(food:FoodPlaces, check_auth = False):
-        if not food : _throw(NotFoundDataException("can't find food place"))
+        if not food or food.id is None: raise(NotFoundDataException("can't find food place"))
 
         if check_auth is True:
             user: Users = get_current_user()
-            if food.userID != user.id: _throw(NotPermissionException("Not permission"))
+            if food.userID != user.id: raise(NotPermissionException("Not permission"))
 
 
 

@@ -58,6 +58,7 @@ class FoodCreate(Resource):
 
 @api.route('/delete/<id>')
 class FoodDelete(Resource):
+        @jwt_required()
         def delete(self, id):
             return _success(inspect.stack(), FoodPlaceService.delete_by_id(id))
 
