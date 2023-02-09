@@ -11,6 +11,8 @@ class UserService:
     @staticmethod
     def get_user_by_id(id):
         try:
+
+            
             user = userCollection.find_one({'_id': ObjectId(id)})
             return user
         except NotFoundDataException as e:
